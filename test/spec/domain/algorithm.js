@@ -5,24 +5,47 @@ describe('Algorithm', function () {
     {
       scheme: ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
       deps: [ [['A'], ['B', 'C']], [['C'], ['D']], [['A', 'C'], ['E']], [['B'], ['A']], [['E'], ['B', 'C']] ],
-      keys: [['A', 'F', 'G'], ['B', 'F', 'G'], ['E', 'F', 'G']]
+      keys: [['A', 'F', 'G'], ['B', 'F', 'G'], ['E', 'F', 'G']],
+      superkeys: [['A', 'F', 'G'], ['B', 'F', 'G'],['E', 'F', 'G'], ['A', 'B', 'C', 'D', 'E', 'F', 'G'], ['A', 'B', 'F', 'G'], ['B', 'E', 'F', 'G'], ['A', 'E', 'F', 'G'], ['A', 'B', 'E', 'F', 'G'], ['A', 'C', 'F', 'G'], ['B', 'C', 'F', 'G'], ['A', 'B', 'C', 'F', 'G'], ['C', 'E', 'F', 'G'], ['A', 'C', 'E', 'F', 'G'], ['B', 'C', 'E', 'F', 'G'], ['A', 'B', 'C', 'E', 'F', 'G'], ['A', 'D', 'F', 'G'], ['B', 'D', 'F', 'G'], ['A', 'B', 'D', 'F', 'G'], ['D', 'E', 'F', 'G'], ['A', 'D', 'E', 'F', 'G'], ['B', 'D', 'E', 'F', 'G'], ['A', 'B', 'D', 'E', 'F', 'G'], ['A', 'C', 'D', 'F', 'G'], ['B', 'C', 'D', 'F', 'G'], ['A', 'B', 'C', 'D', 'F', 'G'], ['C', 'D', 'E', 'F', 'G'], ['A', 'C', 'D', 'E', 'F', 'G'], ['B', 'C', 'D', 'E', 'F', 'G'] ]
     },
     {
       scheme: ['A', 'B', 'C'],
       deps: [ [ ['A'], ['B'] ] ],
-      keys: [ ['A', 'C'] ]
+      keys: [ ['A', 'C'] ],
+      superkeys: [ ['A', 'C'], ['A', 'B', 'C'] ]
     },
     {
       scheme: ['A', 'B', 'C', 'D', 'E'],
       deps: [ [['A', 'C'], ['B', 'D']], [['A', 'D'], ['B', 'C'] ], [['C'], ['D']] ],
-      keys: [['A', 'C', 'E'], ['A', 'D', 'E']]
+      keys: [['A', 'C', 'E'], ['A', 'D', 'E']],
+      superkeys: [['A', 'C', 'E'], ['A', 'C', 'E', 'B'],['A', 'C', 'E', 'D'], ['A', 'C', 'E', 'B', 'D'], ['A', 'D', 'E'],['A', 'D', 'E', 'B'], ['A', 'D', 'E', 'C'], ['A', 'D', 'E', 'B', 'C'],['A', 'B', 'C', 'D', 'E'] ]
     },
     {
       scheme: ['A', 'B', 'C', 'D', 'E'],
       deps: [ [['A'], ['B', 'C']], [['C'], ['D']], [['A'], ['D']]],
-      keys: [['A', 'E']]
+      keys: [['A', 'E']],
+      superkeys: [['A', 'E'], ['A', 'B', 'E'], ['A', 'C', 'E'], ['A', 'D', 'E'], ['A', 'B', 'C', 'E'], ['A', 'B', 'D', 'E'], ['A', 'C', 'D', 'E'], ['A', 'B', 'C', 'D', 'E']]
     }
   ];
+  
+  var schemeEquals = function(a, b) {
+    if (a instanceof Array) {
+      var tmp = { };
+      for (var i = 0; i < a.length; i++) {
+        tmp[a[i].name ? a[i].name() : a.sort().join('')] = true;
+      }
+      a = tmp;
+    }
+    if (b instanceof Array) {
+      var tmp = { };
+      for (var i = 0; i < b.length; i++) {
+        tmp[b[i].name ? b[i].name() : b[i].sort().join('')] = true;
+      }
+      b = tmp;
+    }
+    expect(a).toEqual(b);
+  };
+  
   var injector = angular.injector(['FDAlgorithm']);
   var algo = injector.get('algorithm');
   var prepareRelations = function(gotOne) {
@@ -53,14 +76,20 @@ describe('Algorithm', function () {
       // act
       key = relation.calculateKey(false);
       
-      var strKey = [ ];
-      for (var i = 0; i < key.length; i++) {
-        strKey.push(key[i].scheme);
-      }
+      // assert
+      schemeEquals(key, expctKey);
+    });
+    
+    it('calculates super key properly', function () {
+      // arrange
+      var key      = null;
+      var expctKey = data.superkeys;
       
+      // act
+      key = relation.calculateSuperKey(true);
       
       // assert
-      expect(strKey).toEqual(expctKey);
+      schemeEquals(key, expctKey);
     });
   });
 });

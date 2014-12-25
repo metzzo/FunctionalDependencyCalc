@@ -5,7 +5,18 @@ angular.module('FDAlgorithm', [])
   var module = { };
   
   module.Scheme = function(scheme) {
-    this.scheme = scheme;
+    var set;
+    if (scheme instanceof Array) {
+      this.scheme = scheme;
+      set = this.asSet();
+    } else {
+      set = scheme;
+    }
+    
+    this.scheme = [];
+    for (var key in set) {
+      this.scheme.push(key);
+    }
   };
   module.Scheme.prototype.contains = function(scheme) {
     var set = this.asSet();
@@ -18,8 +29,9 @@ angular.module('FDAlgorithm', [])
   };
   module.Scheme.prototype.equals = function(scheme) {
     if (scheme && scheme.scheme && scheme.scheme.length == this.scheme.length) {
+      var set = scheme.asSet();
       for (var i = 0; i < this.scheme.length; i++) {
-        if (this.scheme[i] != scheme.scheme[i]) {
+        if (!set[this.scheme[i]]) {
           return false;
         }
       }
@@ -28,6 +40,9 @@ angular.module('FDAlgorithm', [])
       return false;
     }
   }
+  module.Scheme.prototype.isEmpty = function() {
+    return this.scheme.length == 0;
+  };
   module.Scheme.prototype.minus = function(scheme) {
     var set = scheme.asSet();
     var newScheme = [];
@@ -37,6 +52,15 @@ angular.module('FDAlgorithm', [])
       }
     }
     return new module.Scheme(newScheme);
+  };
+  module.Scheme.prototype.union = function(scheme) {
+    var set = this.asSet();
+    var set2 = scheme.asSet();
+    for (var key in set2) {
+      set[key] = true;
+    }
+    
+    return new module.Scheme(set);
   };
   
   module.Scheme.prototype.asSet = function() {
@@ -61,7 +85,7 @@ angular.module('FDAlgorithm', [])
     }
   };
   module.Scheme.prototype.name = function() {
-    return this.scheme.join('');
+    return this.scheme.sort().join('');
   };
   
   module.FDep = function(from, to) {
@@ -114,7 +138,7 @@ angular.module('FDAlgorithm', [])
       while (fix());
   };
   
-  module.Relation.prototype.calculateKey = function(superKey) {
+  module.Relation.prototype.calculateKey = function() {
     this.resolveTransFD();
     
     var resolve = function(scheme, deps) {
@@ -123,10 +147,9 @@ angular.module('FDAlgorithm', [])
         var dep = deps[i];
         
         if (scheme.contains(dep.from)) {
-          var newScheme = scheme.clone();
+          var newScheme = scheme.minus(dep.to.minus(dep.from));
           var newDeps = deps.slice(0);
           newDeps.splice(i, 1); // delete current
-          newScheme.remove(dep.to.minus(dep.from)); // remove dep from scheme
           
           results = results.concat(resolve(newScheme, newDeps));
         } 
@@ -140,23 +163,35 @@ angular.module('FDAlgorithm', [])
     };
     var result = resolve(this.scheme, this.deps);
     
-    if (!superKey) {
-      this.removeSuperKeys(result);
-    } else {
-      
-    }
+    this.removeSuperKeys(result);
     
     return result;
   };
   
-  // checks whether given key is really a key
-  module.Relation.prototype.isKey = function(key) {
-    key = 0;
-  };
-  
-  // checks whether given key is really a superkey
-  module.Relation.prototype.isSuperKey = function(key) {
-    key = 0;
+  module.Relation.prototype.calculateSuperKey = function() {
+    var result = this.calculateKey();
+    
+    // add missing superkeys
+    var addSuper = function(scheme) {
+      if (scheme.isEmpty()) return;
+      
+      // does this scheme already exist?
+      for(var i = 0; i < result.length; i++) {
+        if (result[i].equals(scheme)) return;
+      }
+      
+      result.push(scheme);
+      for (var i = 0; i < scheme.scheme.length; i++) {
+        var attr = new module.Scheme([ scheme.scheme[i] ]);
+        for (var j = 0; j < result.length; j++) {
+          var newScheme = result[j].union(attr);
+          addSuper(newScheme);
+        }
+      }
+    };
+    addSuper(this.scheme);
+    
+    return result;
   };
   
   module.Relation.prototype.calculateAttrHull = function(attr) {
