@@ -111,35 +111,48 @@ angular.module('FDAlgorithm', [])
   };
   
   // inserts new FDs for transitive relations
-  module.Relation.prototype.resolveTransFD = function() {
-    var oldLength = this.deps.length; // to avoid infinite loops
-    for (var i = 0; i < oldLength; i++) {
-      for (var j = 0; j < oldLength; j++) {
-        if (i != j && this.deps[j].from.equals(this.deps[i].to)) {
-          this.deps.push(new module.FDep(this.deps[i].from.scheme, this.deps[j].to.scheme));
+  module.Relation.prototype.resolveTransFD = function(deps) {
+    var newDeps = deps.slice(0);
+    for (var i = 0; i < deps.length; i++) {
+      for (var j = 0; j < deps.length; j++) {
+        if (i != j && deps[j].from.equals(deps[i].to)) {
+          newDeps.push(new module.FDep(deps[i].from.scheme, deps[j].to.scheme));
         }
       }
     }
+    return newDeps;
+  };
+  
+  // removes trivial FDs
+  module.Relation.prototype.removeTrivialFD = function(deps) {
+    for (var i = 0; i < deps.length; i++) {
+      deps[i].to = deps[i].to.minus(deps[i].from);
+      if (deps[i].to.isEmpty()) {
+        deps.splice(i, 1);
+        i--;
+      }
+    }
+    return deps;
   };
   
   // removes all superkeys
   module.Relation.prototype.removeSuperKeys = function(keys) {
     var fix = function() {
-        for (var i = 0; i < keys.length; i++) {
-          for (var j = 0; j < keys.length; j++) {
-            if (i != j && keys[j].contains(keys[i])) {
-              keys.splice(j, 1);
-              return true;
-            }
+      for (var i = 0; i < keys.length; i++) {
+        for (var j = 0; j < keys.length; j++) {
+          if (i != j && keys[j].contains(keys[i])) {
+            keys.splice(j, 1);
+            return true;
           }
         }
-        return false;
-      };
-      while (fix());
+      }
+      return false;
+    };
+    while (fix());
   };
   
   module.Relation.prototype.calculateKey = function() {
-    this.resolveTransFD();
+    var deps = this.resolveTransFD(this.deps);
     
     var resolve = function(scheme, deps) {
       var results = [];
@@ -161,7 +174,7 @@ angular.module('FDAlgorithm', [])
         return results;
       }
     };
-    var result = resolve(this.scheme, this.deps);
+    var result = resolve(this.scheme, deps);
     
     this.removeSuperKeys(result);
     
@@ -194,12 +207,29 @@ angular.module('FDAlgorithm', [])
     return result;
   };
   
-  module.Relation.prototype.calculateAttrHull = function(attr) {
-    attr = 0;
-    return {
-      result: '',
-      description: []
-    };
+  module.Relation.prototype.isSuperKey = function(key) {
+    var keyScheme = new module.Scheme(key);
+    var hull = this.calculateAttrHull(keyScheme);
+    return this.scheme.equals(hull);
+  };
+  
+  module.Relation.prototype.calculateAttrHull = function(attr, deps) {
+    if (!deps) deps = this.deps;
+    deps = this.resolveTransFD(deps);
+    
+    var hull = attr.clone();
+    var original;
+    do {
+      original = hull;
+      for (var i = 0; i < deps.length; i++) {
+        var dep = deps[i];
+        if (hull.contains(dep.from)) {
+          hull = hull.union(dep.to);
+        }
+      }
+    } while (!hull.equals(original));
+    
+    return hull;
   };
   
   
@@ -219,20 +249,73 @@ angular.module('FDAlgorithm', [])
     };
   };
   
-  module.Relation.prototype.canonicalOverlap = function() {
-    
-    return {
-      result: '',
-      description: []
-    };
+  module.Relation.prototype.fdDecomposition = function(deps) {
+    var newDeps = [];
+    for (var i = 0; i < deps.length; i++) {
+      var dep = deps[i];
+      for (var j = 0; j < dep.to.scheme.length; j++) {
+        var attr = dep.to.scheme[j];
+        newDeps.push(new module.FDep(dep.from.scheme, [ attr ]));
+      }
+    }
+    return newDeps;
   };
   
-  module.Relation.prototype.calculateAttrHull = function() {
+  module.Relation.prototype.fdUnite = function(deps) {
+    var newDeps = [];
     
-    return {
-      result: '',
-      description: []
-    };
+    for (var i = 0; i < deps.length; i++) {
+      var dep = deps[i];
+      for (var j = 0; j < deps.length; j++) {
+        if (i != j && dep.from.equals(deps[j].from)) {
+          dep.to = dep.to.union(deps[j].to);
+          deps.splice(j, 1);
+          j--;
+        }
+      }
+      newDeps.push(dep);
+    }
+    
+    return newDeps;
+  };
+  
+  module.Relation.prototype.canonicalOverlap = function() {
+    var deps = this.deps;
+    
+    deps = this.removeTrivialFD(deps);
+    deps = this.fdDecomposition(deps);
+    
+    // left reduction
+    for (var i = 0; i < deps.length; i++) {
+      var dep = deps[i];
+      if (dep.from.scheme.length > 1) { // only deps with 2 or more attribues can be removed by left reduction
+        for (var j = 0; j < dep.from.scheme.length; j++) {
+          var currentScheme = new module.Scheme([ dep.from.scheme[j] ]);
+          var hull = this.calculateAttrHull(dep.from.minus(currentScheme));
+          if (hull.contains(dep.to)) {
+            dep.from = dep.from.minus(currentScheme);
+          }
+        }
+      }
+    }
+    
+    // right reduction
+    var newDeps = [];
+    for (var i = 0; i < deps.length; i++) {
+      var dep = deps[i];
+      var tmpDeps = deps.slice(0);
+      // remove current dep
+      tmpDeps.splice(tmpDeps.indexOf(dep), 1);
+      var hull = this.calculateAttrHull(dep.from, tmpDeps);
+      if (!hull.contains(dep.to)) {
+        newDeps.push(dep);
+      }
+    }
+    deps = newDeps;
+    
+    deps = this.fdUnite(deps);
+    
+    return deps;
   };
   
   module.Relation.prototype.calculateSyntheticAlgorithm = function() {
