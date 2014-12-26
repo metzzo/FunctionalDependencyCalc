@@ -28,7 +28,7 @@ angular.module('FDAlgorithm', [])
     return true;
   };
   module.Scheme.prototype.equals = function(scheme) {
-    if (scheme && scheme.scheme && scheme.scheme.length == this.scheme.length) {
+    if (scheme && scheme.scheme && scheme.scheme.length === this.scheme.length) {
       var set = scheme.asSet();
       for (var i = 0; i < this.scheme.length; i++) {
         if (!set[this.scheme[i]]) {
@@ -74,16 +74,6 @@ angular.module('FDAlgorithm', [])
   module.Scheme.prototype.clone = function() {
     return new module.Scheme(this.scheme.slice(0));
   };
-  
-  module.Scheme.prototype.remove = function(scheme) {
-    for (var i = 0; i < scheme.scheme.length; i++) {
-      var attr = scheme.scheme[i];
-      var index = this.scheme.indexOf(attr);
-      if (index != -1) {
-        this.scheme.splice(index, 1);
-      }
-    }
-  };
   module.Scheme.prototype.name = function() {
     return this.scheme.sort().join('');
   };
@@ -94,7 +84,18 @@ angular.module('FDAlgorithm', [])
   };
   module.FDep.prototype.name = function() {
     return this.from.name() + ' → ' + this.to.name();
-  }
+  };
+  // removes the FDef and every FDef that is equivalent from the array and returns a new one
+  module.FDep.prototype.removeMyself = function(arr) {
+    var newArr = [];
+    for (var i = 0; i < arr.length; i++) {
+      var def = arr[i];
+      if (!(def.from.equals(this.from) && def.to.equals(this.to))) {
+        newArr.push(def);
+      }
+    }
+    return newArr;
+  };
   
   module.Relation = function(scheme, deps) {
     this.scheme = scheme;
@@ -215,15 +216,14 @@ angular.module('FDAlgorithm', [])
   
   module.Relation.prototype.calculateAttrHull = function(attr, deps) {
     if (!deps) deps = this.deps;
-    deps = this.resolveTransFD(deps);
     
-    var hull = attr.clone();
+    var hull = attr;
     var original;
     do {
       original = hull;
       for (var i = 0; i < deps.length; i++) {
         var dep = deps[i];
-        if (hull.contains(dep.from)) {
+        if (hull.contains(dep.from) && !hull.contains(dep.to)) {
           hull = hull.union(dep.to);
         }
       }
@@ -291,7 +291,7 @@ angular.module('FDAlgorithm', [])
       if (dep.from.scheme.length > 1) { // only deps with 2 or more attribues can be removed by left reduction
         for (var j = 0; j < dep.from.scheme.length; j++) {
           var currentScheme = new module.Scheme([ dep.from.scheme[j] ]);
-          var hull = this.calculateAttrHull(dep.from.minus(currentScheme));
+          var hull = this.calculateAttrHull(dep.from.minus(currentScheme), deps);
           if (hull.contains(dep.to)) {
             dep.from = dep.from.minus(currentScheme);
           }
@@ -303,9 +303,8 @@ angular.module('FDAlgorithm', [])
     var newDeps = [];
     for (var i = 0; i < deps.length; i++) {
       var dep = deps[i];
-      var tmpDeps = deps.slice(0);
-      // remove current dep
-      tmpDeps.splice(tmpDeps.indexOf(dep), 1);
+      var tmpDeps = dep.removeMyself(deps);
+      
       var hull = this.calculateAttrHull(dep.from, tmpDeps);
       if (!hull.contains(dep.to)) {
         newDeps.push(dep);
