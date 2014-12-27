@@ -279,7 +279,7 @@ angular.module('FDAlgorithm', [])
     return newDeps;
   };
   
-  module.Relation.prototype.canonicalOverlap = function() {
+  module.Relation.prototype.calculateCanonicalOverlap = function() {
     var deps = this.deps;
     
     deps = this.removeTrivialFD(deps);
@@ -318,11 +318,58 @@ angular.module('FDAlgorithm', [])
   };
   
   module.Relation.prototype.calculateSyntheticAlgorithm = function() {
+    var deps = this.calculateCanonicalOverlap();
+    var keys = this.calculateKey();
     
-    return {
-      result: '',
-      description: []
-    };
+    var relations = [];
+    for (var i = 0; i < deps.length; i++) {
+      var dep = deps[i];
+      // create scheme
+      var scheme = dep.from.union(dep.to);
+      // find all deps that share the same attributes
+      var tmpDeps = [];
+      for (var j = 0; j < deps.length; j++) {
+        var tmpDep = deps[j];
+        if (scheme.contains(tmpDep.from.union(tmpDep.to))) {
+          tmpDeps.push(tmpDep);
+        }
+      }
+      
+      // create it bitch
+      var relation = new module.Relation(scheme, tmpDeps);
+      relations.push(relation);
+    }
+    
+    var keyExists = false;
+    for (var i = 0; i < relations.length && !keyExists; i++) {
+      for (var j = 0; j < keys.length; j++) {
+        if (relations[i].scheme.contains(keys[j])) {
+          keyExists = true;
+          break;
+        }
+      }
+    }
+    if (!keyExists) {
+      // :( => define own scheme, in order to ensure verlustlosigkeit
+      relations.push(new module.Relation(keys[0], new module.Scheme([])));
+    }
+    
+    // eliminate redundant schemes
+    var result = [];
+    
+    for (var i = 0; i < relations.length; i++) {
+      var redundant = false;
+      for (var j = 0; j < relations.length && !redundant; j++) {
+        if (i != j && relations[j].scheme.contains(relations[i].scheme)) {
+          redundant = true;
+        }
+      }
+      if (!redundant) {
+        result.push(relations[i]);
+      }
+    }
+    
+    return result;
   };
   
   module.Relation.prototype.isInNF = function() {

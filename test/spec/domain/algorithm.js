@@ -3,6 +3,36 @@
 describe('Algorithm', function () {
   var schemes = [
     {
+      scheme: ['B', 'D', 'E', 'F', 'H', 'J'],
+      deps: [ [['B'], ['D']], [['E', 'H'], ['F']], [['E', 'H'], ['E', 'J']], [['D', 'J'], ['B']], [['J'], ['F', 'J']] ],
+      synthetic: [
+        ['E', 'H', 'J'],
+        ['D', 'J', 'B'],
+        ['J', 'F'],
+        ['B', 'E', 'H']
+      ]
+    },
+    {
+      scheme: ['A', 'B', 'C', 'D', 'E', 'F'],
+      deps: [ [['A', 'B'], ['B', 'E']], [['A', 'B'], ['D']], [['E', 'F'], ['C']], [['E'], ['D', 'E']], [['C'], ['F']] ],
+      synthethic: [
+        ['A', 'B', 'E'],
+        ['E', 'F', 'C'],
+        ['E', 'D'],
+        ['A', 'B', 'F']
+      ]
+    },
+    {
+      scheme: ['A', 'B', 'C', 'D', 'E', 'F'],
+      deps: [ [['A'], ['E', 'C']], [['B', 'C'], ['F']], [['D'], ['B']] ],
+      synthetic: [
+        ['A', 'E', 'C'],
+        ['B', 'C', 'F'],
+        ['D', 'B'],
+        ['A', 'D']
+      ]
+    },
+    {
       scheme: ['A', 'B', 'C', 'D', 'E', 'F'],
       deps: [ [['A', 'B', 'C'], ['D']], [['A', 'F'], ['B']], [['C'], ['F', 'E']], [['E'], ['F']], [['F'], ['B']], [['E'], ['B']], [['A', 'F'], ['F']] ],
       canonical: [ [['A', 'C'], ['D']], [['C'], ['E']], [['E'], ['F']], [['F'], ['B']] ]
@@ -88,6 +118,25 @@ describe('Algorithm', function () {
     return schemeEquals(a, b);
   };
   
+  var relEquals = function(a, b) {
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] instanceof algo.Relation) {
+        a[i] = a[i].scheme
+      } else {
+        a[i] = new algo.Scheme(a[i]);
+      }
+    }
+    
+    for (var i = 0; i < b.length; i++) {
+      if (b[i] instanceof algo.Relation) {
+        b[i] = b[i].scheme
+      } else {
+        b[i] = new algo.Scheme(b[i]);
+      }
+    }
+    
+    schemeEquals(a, b);
+  };
   
   var prepareRelations = function(gotOne) {
     for (var i = 0; i < schemes.length; i++) {
@@ -144,10 +193,24 @@ describe('Algorithm', function () {
         var expctDeps = data.canonical;
         
         // act
-        deps = relation.canonicalOverlap();
+        deps = relation.calculateCanonicalOverlap();
         
         // assert
         fdEquals(deps, expctDeps);
+      });
+    }
+    
+    if (data.synthetic) {
+      it('calculates synthetic algorithm', function() {
+        // arrange
+        var relations = null;
+        var expctRels = data.synthetic;
+        
+        // act
+        relations = relation.calculateSyntheticAlgorithm();
+        
+        // assert
+        relEquals(relations, expctRels);
       });
     }
     
