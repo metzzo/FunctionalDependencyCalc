@@ -9,6 +9,18 @@
  */
 angular.module('functionalDependencyApp')
   .controller('MainCtrl', function ($scope) {
-    $scope = 0;
-    
+    $scope.scheme = [
+      {
+        text: 'A',
+        editing: false
+      },
+      {
+        text: 'B',
+        editing: false
+      },
+      {
+        text: 'C',
+        editing: false
+      }
+    ];
   });

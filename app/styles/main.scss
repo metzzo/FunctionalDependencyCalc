@@ -22,17 +22,36 @@ fd-scheme {
   background-color: #f8f8f8;
   
   list-style-type: none;
+  
+  padding-bottom: 8px;
 }
 
 .fd-entry {
   cursor: move;
 }
 
+.fdentry-input .form-control {
+  width: auto !important;
+  min-width: 45px;
+  display: inline-block;
+}
+
 .fd-addentry {
   display: inline-block;
   
-  margin: 4px;
-  padding: 4px;
+  button {
+    margin-top: 6px;
+  }
+}
+
+.fdentry-group {
+  margin-right: 8px;
+  margin-top: 8px;
+}
+
+.fdentry-remove {
+  width: 18px;
+  padding-left: 2px;
 }
 
 .browsehappy {

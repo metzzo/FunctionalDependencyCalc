@@ -1,0 +1,15 @@
+<div class="btn-group fdentry-group" role="group">
+
+  <button type="button" class="btn btn-info btn-md fdentry-remove">
+    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+  </button>
+  
+  <span ng-show="data.editing" class="fdentry-input">
+    <input type="text" class="form-control" ng-model="data.text">
+  </span>
+  
+  <button ng-hide="data.editing" type="button" class="fdentry-text btn btn-default btn-md">
+    {{data.text}}
+  </button>
+
+</div>
