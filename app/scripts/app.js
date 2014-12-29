@@ -12,7 +12,8 @@ angular
   .module('functionalDependencyApp', [
     'ngAnimate',
     'ngRoute',
-    'ngSanitize'
+    'ngSanitize',
+    'FDAlgorithm'
   ])
   .config(function ($routeProvider) {
     $routeProvider

@@ -3,27 +3,44 @@ $icon-font-path: "../bower_components/bootstrap-sass-official/assets/fonts/boots
 @import "bootstrap-sass-official/assets/stylesheets/_bootstrap.scss";
 // endbower
 
-fd-scheme {
-  display: block;
-  
-  margin-left: 32px;
-  margin-right: 32px;
-  
-  min-height: 80px;
-}
-
 .fd-resizeable {
   display: block;
   
   margin: 0px;
-  min-height: 80px;
   
   border: 1px solid #e5e5e5;
   background-color: #f8f8f8;
   
   list-style-type: none;
-  
   padding-bottom: 8px;
+}
+
+.fd-entrycontainer {
+  display: inline-block;
+  height: 20px;
+}
+
+.fd-resizeable-small {
+  display: inline-block;
+  padding-bottom: 0px;
+  margin: 0px;
+    
+  .fd-resizeable {
+    padding-bottom: 0px;
+  }
+  
+  .fdentry-group {
+    margin: 0px !important;
+  }
+  
+  .fd-addentry {
+    display: inline;
+    margin: 0px;
+    
+    button {
+      margin-top: 0px !important;
+    }
+  }
 }
 
 .fd-entry {
@@ -37,7 +54,9 @@ fd-scheme {
 }
 
 .fd-addentry {
-  display: inline-block;
+  display: block;
+  margin-top: 16px;
+  margin-left: 64px;
   
   button {
     margin-top: 6px;

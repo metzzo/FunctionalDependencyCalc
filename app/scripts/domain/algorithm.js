@@ -39,7 +39,7 @@ angular.module('FDAlgorithm', [])
     } else {
       return false;
     }
-  }
+  };
   module.Scheme.prototype.isEmpty = function() {
     return this.scheme.length == 0;
   };

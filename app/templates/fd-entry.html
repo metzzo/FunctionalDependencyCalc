@@ -1,15 +1,27 @@
 <div class="btn-group fdentry-group" role="group">
 
-  <button type="button" class="btn btn-info btn-md fdentry-remove">
+  <button type="button" class="btn btn-default btn-md fdentry-remove" ng-show="data.editing">
     <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
   </button>
   
-  <span ng-show="data.editing" class="fdentry-input">
-    <input type="text" class="form-control" ng-model="data.text">
+  <span ng-show="data.editing && data.type == 'scheme'" class="fdentry-input">
+    <input type="text" class="form-control" ng-model="data.attribute">
+  </span>
+  
+  <span ng-show="data.editing && data.type == 'fdep'" class="fdentry-input">
+    <!-- Schemes are added programatically due to infinite loop otherwise -->
+    <span class="fdep-from"></span>
+    <span class="glyphicon glyphicon-arrow-right fdep-arrow"></span>
+    <span class="fdep-to"></span>
+  </span>
+  
+  <span ng-show="data.editing && data.type == 'dep'" class="fdentry-input">
+      <select class="form-control" ng-options="attr.attribute for attr in data.scheme" ng-model="selected">
+      </select>
   </span>
   
   <button ng-hide="data.editing" type="button" class="fdentry-text btn btn-default btn-md">
-    {{data.text}}
+    {{data.attribute}}
   </button>
 
 </div>

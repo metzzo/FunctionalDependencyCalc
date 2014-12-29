@@ -1,6 +1,41 @@
 <div class="row" ng-controller="MainCtrl">
-  <h4>Swag</h4>
+  <h4>Relation</h4>
   <p>
-    <fd-scheme scheme="scheme"></fd-scheme>
+    <h5>Schema:</h5>
+    <fd-set set="scheme" type="scheme"></fd-set>
+  </p>
+  <p>
+    <h5>Funktionale Abhängigkeit:</h5>
+    <fd-set set="fdep" type="fdep"></fd-set>
+  </p>
+  <p>
+    <h5>Schlüssel</h5>
+    <ul>
+      <li ng-repeat="key in keys">
+        {{formatScheme(key)}}
+      </li>
+    </ul>
+  </p>
+  <p>
+    <h5>Superschlüssel</h5>
+    <ul>
+      <li ng-repeat="key in superKeys">
+        {{formatScheme(key)}}
+      </li>
+    </ul>
+  </p>
+  <p>
+    <h5>Kanonische Überdeckung</h5>
+    <ul>
+      <li>{{formatScheme(canonicalOverlap)}}</li>
+    </ul>
+  </p>
+  <p>
+    <h5>Synthetischer Algorithmus</h5>
+    <ul>
+      <li ng-repeat="relation in synthetic">
+        {{formatScheme(synthetic)}}
+      </li>
+    </ul>
   </p>
 </div>
