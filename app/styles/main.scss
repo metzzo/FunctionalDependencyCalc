@@ -20,31 +20,19 @@ $icon-font-path: "../bower_components/bootstrap-sass-official/assets/fonts/boots
   height: 20px;
 }
 
-.fd-resizeable-small {
-  display: inline-block;
-  padding-bottom: 0px;
-  margin: 0px;
-    
-  .fd-resizeable {
-    padding-bottom: 0px;
-  }
-  
-  .fdentry-group {
-    margin: 0px !important;
-  }
-  
-  .fd-addentry {
-    display: inline;
-    margin: 0px;
-    
-    button {
-      margin-top: 0px !important;
-    }
-  }
-}
-
 .fd-entry {
   cursor: move;
+}
+
+.fd-entry:after {
+  font-size: 20px;
+  vertical-align: bottom;
+  content: ",";  
+  margin-right: 8px;
+}
+.fd-entry:last-child:after {
+  margin-right: 0px;
+  content: "";
 }
 
 .fdentry-input .form-control {
@@ -54,9 +42,9 @@ $icon-font-path: "../bower_components/bootstrap-sass-official/assets/fonts/boots
 }
 
 .fd-addentry {
-  display: block;
+  display: inline-block;
   margin-top: 16px;
-  margin-left: 64px;
+  margin-left: 32px;
   
   button {
     margin-top: 6px;

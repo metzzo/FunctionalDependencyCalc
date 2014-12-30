@@ -26,8 +26,6 @@ angular.module('functionalDependencyApp')
           .disableSelection()
           .find('.fd-addentry')
           .click(function() {
-            scope.uneditAll();
-            
             scope.set.push({
               attribute: '',
               editing: true,
@@ -37,32 +35,15 @@ angular.module('functionalDependencyApp')
             scope.$apply();
           });
         
-        if (scope.type === 'dep') {
-          $(element)
-              .find('.fd-addentry button')
-              .addClass('btn-xs');
-        }
-        
-        scope.$on('unedit-all', function() {
-          scope.uneditAll();
-        });
-        
         scope.$on('remove-fdentry', function(event, msg) {
           var index = scope.set.indexOf(msg);
           if (index != -1) {
             scope.set.splice(index, 1);
-            scope.$apply();
           }
         });
         
-        scope.uneditAll = function() {
-          for (var i = 0; i < scope.set.length; i++) {
-            var data = scope.set[i];
-            if (data.isReady()) {
-              data.setEditing(false);
-            }
-          }
-          scope.$apply();
+        scope.add = function() {
+          
         };
         
         scope.isReady = function() {
@@ -87,36 +68,14 @@ angular.module('functionalDependencyApp')
       link: function (scope, element, attrs) {
         $(element)
           .addClass('fd-entry');
-          
-        $(element)
-          .find('.fdentry-text')
-          .click(function() {
-            $rootScope.$broadcast('unedit-all');
-            
-            scope.data.setEditing(true);
-            scope.$apply();
-          });
         
-        $(element)
-          .find('.fdentry-remove')
-          .click(function() {
-            $rootScope.$broadcast('remove-fdentry', scope.data);
-          });
+        scope.removeMyself = function() {
+          $rootScope.$broadcast('remove-fdentry', scope.data);
+        };
         
         if (scope.data.type === 'scheme') {
           $(element)
             .find('input')
-            .click(function(e) {
-              $rootScope.$broadcast('unedit-all');
-              e.preventDefault();
-              
-              scope.data.setEditing(true);
-              $(this).focus();
-              
-              scope.$apply();
-              
-              return false;
-            })
             .keypress(function(e) {
               if (e.which === 13 && scope.data.isReady()) {
                 scope.data.setEditing(false);
@@ -130,10 +89,10 @@ angular.module('functionalDependencyApp')
           
           $(element)
             .find('.fdep-to')
-            .append('<fd-set set="data.from" type="dep" class="fd-resizeable-small"></fd-set>');
+            .append('<fd-set set="data.from" type="dep"></fd-set>');
           $(element)
             .find('.fdep-from')
-            .append('<fd-set set="data.to" type="dep" class="fd-resizeable-small"></fd-set>');
+            .append('<fd-set set="data.to" type="dep"></fd-set>');
             
             $compile(element.contents())(scope);
         } else if (scope.data.type === 'dep') {
@@ -147,6 +106,10 @@ angular.module('functionalDependencyApp')
           
           $(element)
             .find('.form-control')
+            .focus(function() {
+              $(this).prop('selectedIndex', -1);
+              $(this).blur();
+            })
             .change(function() {
               scope.data.setEditing(false);
               scope.data.attribute = scope.selected.attribute;
@@ -158,6 +121,21 @@ angular.module('functionalDependencyApp')
           scope.data.isReady = function() {
             if (scope.data.type === 'scheme') {
               return scope.data.attribute.length > 0;
+            } else if (scope.data.type === 'fdep') {
+              var ready = null;
+              for (var i = 0; i < scope.data.from.length; i++) {
+                if (ready === null || ready) {
+                  ready = scope.data.from[i].attribute.length > 0;
+                }
+              }
+              
+              for (var i = 0; i < scope.data.to.length; i++) {
+                if (ready) {
+                  ready = scope.data.to[i].attribute.length > 0;
+                }
+              }
+              
+              return ready === true;
             } else {
               return true;
             }
@@ -166,13 +144,31 @@ angular.module('functionalDependencyApp')
         
         if (!scope.data.setEditing) {
           scope.data.setEditing = function(val) {
-            if (scope.data.editing !== val) {
-              if (scope.data.editing && !val) {
-                $rootScope.$broadcast('request-dataupdate');
-              }
-              scope.data.editing = val;
+            if (scope.data.editing && !val) {
+              $rootScope.$broadcast('request-dataupdate');
             }
+            
+            if (scope.data.type === 'fdep') {
+              if (val) {
+                $(element)
+                  .find('.modal')
+                  .modal('show')
+                  .on('hidden.bs.modal', function() {
+                    scope.data.setEditing(false);
+                    scope.$apply();
+                  });
+              } else {
+                $(element)
+                  .find('.modal')
+                  .modal('hide');
+
+              }
+            }
+            
+            scope.data.editing = val;
           };
+          
+          scope.data.setEditing(scope.data.editing);
         }
         
         $rootScope.$broadcast('request-dataupdate');

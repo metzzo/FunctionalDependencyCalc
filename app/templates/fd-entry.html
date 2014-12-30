@@ -1,6 +1,6 @@
 <div class="btn-group fdentry-group" role="group">
 
-  <button type="button" class="btn btn-default btn-md fdentry-remove" ng-show="data.editing">
+  <button type="button" class="btn btn-default btn-md fdentry-remove" ng-show="data.editing && data.type != 'fdep'" ng-click="removeMyself()">
     <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
   </button>
   
@@ -10,9 +10,28 @@
   
   <span ng-show="data.editing && data.type == 'fdep'" class="fdentry-input">
     <!-- Schemes are added programatically due to infinite loop otherwise -->
-    <span class="fdep-from"></span>
-    <span class="glyphicon glyphicon-arrow-right fdep-arrow"></span>
-    <span class="fdep-to"></span>
+    
+    <div class="modal fade">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Funktionale Abhängigkeit</h4>
+          </div>
+          <div class="modal-body">
+            <span class="fdep-to"></span>
+            <p class="text-center">
+              <span class="glyphicon glyphicon-arrow-down fdep-arrow"></span>
+            </p>
+            <span class="fdep-from"></span>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-warning" ng-click="removeMyself()">Löschen</button>
+            <button type="button" class="btn btn-primary" ng-disabled="!data.isReady()" ng-click="data.setEditing(false)">Okay</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </span>
   
   <span ng-show="data.editing && data.type == 'dep'" class="fdentry-input">
@@ -20,8 +39,17 @@
       </select>
   </span>
   
-  <button ng-hide="data.editing" type="button" class="fdentry-text btn btn-default btn-md">
+  <button ng-hide="data.editing || data.type == 'fdep'" type="button" class="fdentry-text btn btn-default btn-md"  ng-click="data.setEditing(true)">
     {{data.attribute}}
   </button>
-
+  
+  <div ng-hide="data.type != 'fdep'">
+    <button type="button" class="fdentry-text btn btn-default btn-md" ng-repeat="attr in data.from" ng-click="setEditing(true)">
+      {{attr.attribute}}
+    </button>
+    <span class="glyphicon glyphicon-arrow-right fdep-arrow"></span>
+    <button type="button" class="fdentry-text btn btn-default btn-md" ng-repeat="attr in data.to" ng-click="data.setEditing(true)">
+      {{attr.attribute}}
+    </button>
+  </div>
 </div>
