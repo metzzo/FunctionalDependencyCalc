@@ -5,7 +5,7 @@
     <fd-set set="scheme" type="scheme"></fd-set>
   </p>
   <p>
-    <h5>Funktionale Abhängigkeit:</h5>
+    <h5>Funktionale Abhängigkeiten:</h5>
     <fd-set set="fdep" type="fdep"></fd-set>
   </p>
   <p>
@@ -26,16 +26,21 @@
   </p>
   <p>
     <h5>Kanonische Überdeckung</h5>
-    <ul>
-      <li>{{formatScheme(canonicalOverlap)}}</li>
-    </ul>
+    <fd-set set="canonicalOverlap" type="fdep" fdreadonly="true"></fd-set>
   </p>
-  <p>
+  <!--<p>
     <h5>Synthetischer Algorithmus</h5>
     <ul>
-      <li ng-repeat="relation in synthetic">
-        {{formatScheme(synthetic)}}
+      <li ng-repeat="rel in synthetic">
+        <p>
+          <h5>Schema:</h5>
+          <fd-set set="rel.scheme" type="scheme" fdreadonly="true"></fd-set>
+        </p>
+        <p>
+          <h5>Funktionale Abhängigkeiten:</h5>
+          <fd-set set="rel.deps" type="fdep" fdreadonly="true"></fd-set>
+        </p>
       </li>
     </ul>
-  </p>
+  </p>-->
 </div>

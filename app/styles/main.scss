@@ -17,7 +17,8 @@ $icon-font-path: "../bower_components/bootstrap-sass-official/assets/fonts/boots
 
 .fd-entrycontainer {
   display: inline-block;
-  height: 20px;
+  height: 36px;
+  margin-top: -8px;
 }
 
 .fd-entry {
@@ -43,7 +44,6 @@ $icon-font-path: "../bower_components/bootstrap-sass-official/assets/fonts/boots
 
 .fd-addentry {
   display: inline-block;
-  margin-top: 16px;
   margin-left: 32px;
   
   button {

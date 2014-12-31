@@ -7,13 +7,21 @@
  * # Set
  */
 angular.module('functionalDependencyApp')
+  .factory('fdSetData', function() {
+    return {
+      createScheme: function() {
+        
+      }
+    };
+  })
   .directive('fdSet', function () {
     return {
       restrict: 'E',
       templateUrl: 'templates/fd-set.html',
       scope: {
         'set': '=',
-        'type': '@'
+        'type': '@',
+        'readonly': '=fdreadonly'
       },
       link: function (scope, element, attrs) {
         $(element)
@@ -26,13 +34,15 @@ angular.module('functionalDependencyApp')
           .disableSelection()
           .find('.fd-addentry')
           .click(function() {
-            scope.set.push({
-              attribute: '',
-              editing: true,
-              type: scope.type
-            });
-            
-            scope.$apply();
+            if (!scope.readonly) {
+              scope.set.push({
+                attribute: '',
+                editing: true,
+                type: scope.type
+              });
+              
+              scope.$apply();
+            }
           });
         
         scope.$on('remove-fdentry', function(event, msg) {
@@ -41,10 +51,6 @@ angular.module('functionalDependencyApp')
             scope.set.splice(index, 1);
           }
         });
-        
-        scope.add = function() {
-          
-        };
         
         scope.isReady = function() {
           var ready = true;
@@ -63,7 +69,8 @@ angular.module('functionalDependencyApp')
       restrict: 'E',
       templateUrl: 'templates/fd-entry.html',
       scope: {
-        data: '=data'
+        data: '=data',
+        readonly: '=fdreadonly'
       },
       link: function (scope, element, attrs) {
         $(element)
@@ -84,21 +91,21 @@ angular.module('functionalDependencyApp')
               }
             });
         } else if (scope.data.type === 'fdep') {
-          scope.data.from = [];
-          scope.data.to = [];
+          scope.data.from = [ ];
+          scope.data.to = [ ];
           
           $(element)
             .find('.fdep-to')
-            .append('<fd-set set="data.from" type="dep"></fd-set>');
+            .append('<fd-set set="data.from" type="dep" fdreadonly="readonly"></fd-set>');
           $(element)
             .find('.fdep-from')
-            .append('<fd-set set="data.to" type="dep"></fd-set>');
+            .append('<fd-set set="data.to" type="dep" fdreadonly="readonly"></fd-set>');
             
             $compile(element.contents())(scope);
         } else if (scope.data.type === 'dep') {
           scope.notifyScheme = function(scheme) {
             scope.data.scheme = scheme;
-            scope.selected = scheme.length > 0 ? scheme[0] : null;
+            scope.attribue = scope.selected = scheme.length > 0 ? scheme[0] : null;
           };
           scope.selected = null;
           
@@ -144,6 +151,11 @@ angular.module('functionalDependencyApp')
         
         if (!scope.data.setEditing) {
           scope.data.setEditing = function(val) {
+            if (scope.readonly) {
+              scope.data.editing = false;
+              return;
+            }
+            
             if (scope.data.editing && !val) {
               $rootScope.$broadcast('request-dataupdate');
             }
