@@ -158,6 +158,8 @@ describe('Algorithm', function () {
     }
   };
   prepareRelations(function(relation, data) {
+    var original = relation.clone();
+    
     if (data.keys) {
       it('calculates key properly', function () {
         // arrange
@@ -169,6 +171,7 @@ describe('Algorithm', function () {
         
         // assert
         schemeEquals(key, expctKey);
+        expect(relation.name()).toEqual(original.name());
       });
     }
     
@@ -183,6 +186,7 @@ describe('Algorithm', function () {
         
         // assert
         schemeEquals(key, expctKey);
+        expect(relation.name()).toEqual(original.name());
       });
     }
     
@@ -197,6 +201,7 @@ describe('Algorithm', function () {
         
         // assert
         fdEquals(deps, expctDeps);
+        expect(relation.name()).toEqual(original.name());
       });
     }
     
@@ -211,6 +216,7 @@ describe('Algorithm', function () {
         
         // assert
         relEquals(relations, expctRels);
+        expect(relation.name()).toEqual(original.name());
       });
     }
     
@@ -234,6 +240,8 @@ describe('Algorithm', function () {
           fail('Key cannot be empty.');
         }
       }
+      
+      expect(relation.name()).toEqual(original.name());
     })
   });
 });

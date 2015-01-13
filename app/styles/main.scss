@@ -3,6 +3,18 @@ $icon-font-path: "../bower_components/bootstrap-sass-official/assets/fonts/boots
 @import "bootstrap-sass-official/assets/stylesheets/_bootstrap.scss";
 // endbower
 
+.leftsynthetic {
+  width: 50%;
+  display: inline-block;
+  padding-right: 4px;
+}
+
+.rightsynthetic {
+  width: 50%;
+  display: inline-block;
+  padding-left: 4px;
+}
+
 .fd-resizeable {
   display: block;
   
@@ -13,11 +25,12 @@ $icon-font-path: "../bower_components/bootstrap-sass-official/assets/fonts/boots
   
   list-style-type: none;
   padding-bottom: 8px;
+  min-height: 36px;
 }
 
 .fd-entrycontainer {
   display: inline-block;
-  height: 36px;
+  height: 26px;
   margin-top: -8px;
 }
 

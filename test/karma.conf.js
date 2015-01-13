@@ -30,7 +30,10 @@ module.exports = function(config) {
     ],
 
     // list of files / patterns to exclude
-    exclude: [],
+    exclude: [
+      'app/scripts/libs/**/*.js',
+      'app/scripts/domain/algoWorker.js'
+    ],
 
     // web server port
     port: 8080,

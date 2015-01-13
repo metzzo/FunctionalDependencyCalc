@@ -4,6 +4,49 @@ angular.module('FDAlgorithm', [])
 .factory('algorithm', function() {
   var module = { };
   
+  module.toScheme = function(scheme) {
+    if (!scheme) return scheme;
+    
+    if (scheme instanceof Array) {
+      for (var i = 0; i < scheme.length; i++) {
+        module.toScheme(scheme[i]);
+      }
+    } else {
+      scheme.__proto__ = module.Scheme.prototype;
+    }
+    return scheme;
+  };
+  
+  module.toRelation = function(relation) {
+    if (!relation) return relation;
+    
+    if (relation instanceof Array) {
+      for (var i = 0; i < relation.length; i++) {
+        module.toRelation(relation[i]);
+      }
+    } else {
+      relation.__proto__ = module.Relation.prototype;
+      module.toScheme(relation.scheme);
+      module.toFDep(relation.deps);
+    }
+    return relation;
+  };
+  
+  module.toFDep = function(dep) {
+    if (!dep) return dep;
+    
+    if (dep instanceof Array) {
+      for (var i = 0; i < dep.length; i++) {
+        module.toFDep(dep[i]);
+      }
+    } else {
+      dep.__proto__ = module.FDep.prototype;
+      module.toScheme(dep.from);
+      module.toScheme(dep.to);
+    }
+    return dep;
+  };
+  
   module.Scheme = function(scheme) {
     var set;
     if (scheme instanceof Array) {
@@ -85,6 +128,9 @@ angular.module('FDAlgorithm', [])
   module.FDep.prototype.name = function() {
     return this.from.name() + ' → ' + this.to.name();
   };
+  module.FDep.prototype.clone = function() {
+    return new module.FDep(this.from.clone().scheme, this.to.clone().scheme);
+  };
   // removes the FDef and every FDef that is equivalent from the array and returns a new one
   module.FDep.prototype.removeMyself = function(arr) {
     var newArr = [];
@@ -110,6 +156,17 @@ angular.module('FDAlgorithm', [])
     }
     return name + arr.join(', ') + ')';
   };
+  module.Relation.prototype.clone = function() {
+    return new module.Relation(this.scheme.clone(), this.cloneDeps());
+  };
+  module.Relation.prototype.cloneDeps = function(oldDeps) {
+    if (!oldDeps) oldDeps = this.deps;
+    var deps = [];
+    for (var i = 0; i < oldDeps.length; i++) {
+      deps.push(oldDeps[i].clone());
+    }
+    return deps;
+  };
   
   // inserts new FDs for transitive relations
   module.Relation.prototype.resolveTransFD = function(deps) {
@@ -126,6 +183,7 @@ angular.module('FDAlgorithm', [])
   
   // removes trivial FDs
   module.Relation.prototype.removeTrivialFD = function(deps) {
+    deps = this.cloneDeps(deps);
     for (var i = 0; i < deps.length; i++) {
       deps[i].to = deps[i].to.minus(deps[i].from);
       if (deps[i].to.isEmpty()) {

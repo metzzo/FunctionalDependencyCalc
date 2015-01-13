@@ -29,7 +29,7 @@ angular.module('functionalDependencyApp')
           .sortable({
             axis: 'xy',
             cancel: '.fd-addentry,.form-control,input',
-            items: "fd-entry"
+            items: 'fd-entry'
           })
           .disableSelection()
           .find('.fd-addentry')
@@ -91,8 +91,8 @@ angular.module('functionalDependencyApp')
               }
             });
         } else if (scope.data.type === 'fdep') {
-          scope.data.from = [ ];
-          scope.data.to = [ ];
+          scope.data.from = scope.data.from ? scope.data.from : [ ];
+          scope.data.to   = scope.data.to ? scope.data.to : [ ];
           
           $(element)
             .find('.fdep-to')

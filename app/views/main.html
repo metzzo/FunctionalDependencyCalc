@@ -10,37 +10,48 @@
   </p>
   <p>
     <h5>Schlüssel</h5>
-    <ul>
-      <li ng-repeat="key in keys">
-        {{formatScheme(key)}}
-      </li>
-    </ul>
+    <div ng-repeat="key in keys">
+      <fd-set set="key" type="scheme" fdreadonly="true"></fd-set>
+    </div>
   </p>
   <p>
     <h5>Superschlüssel</h5>
-    <ul>
-      <li ng-repeat="key in superKeys">
-        {{formatScheme(key)}}
-      </li>
-    </ul>
+    <div ng-repeat="key in superKeys">
+      <fd-set set="key" type="scheme" fdreadonly="true"></fd-set>
+    </div>
   </p>
   <p>
     <h5>Kanonische Überdeckung</h5>
     <fd-set set="canonicalOverlap" type="fdep" fdreadonly="true"></fd-set>
   </p>
-  <!--<p>
+  <p>
     <h5>Synthetischer Algorithmus</h5>
-    <ul>
-      <li ng-repeat="rel in synthetic">
-        <p>
-          <h5>Schema:</h5>
-          <fd-set set="rel.scheme" type="scheme" fdreadonly="true"></fd-set>
-        </p>
-        <p>
-          <h5>Funktionale Abhängigkeiten:</h5>
-          <fd-set set="rel.deps" type="fdep" fdreadonly="true"></fd-set>
-        </p>
-      </li>
-    </ul>
+    <div ng-repeat="rel in synthetic">
+      <div class="leftsynthetic">
+        <h6>Schema:</h6>
+        <fd-set set="rel.scheme" type="scheme" fdreadonly="true"></fd-set>
+      </div><div class="rightsynthetic">
+        <h6>Funktionale Abhängigkeiten:</h6>
+        <fd-set set="rel.deps" type="fdep" fdreadonly="true"></fd-set>
+      </div>
+    </div>
+  </p>
+  <!--<p>
+    <h5>Dekompositions Algorithmus</h5>
+    <p>
+      Coming Soon ;)
+    </p>
   </p>-->
+  <p>
+    <h5>Export</h5>
+    <pre>
+Schema: {{formatScheme(relation.scheme)}}
+Funktionale Abhängigkeiten: {{formatDeps(relation.deps)}}
+Schlüssel: <span ng-repeat="key in rawKeys">{{formatScheme(key)}} </span>
+Superschlüssel: <span ng-repeat="key in rawSuperKeys">{{formatScheme(key)}} </span>
+Kanonische Überdeckung: {{formatDeps(rawCanonicalOverlap)}}
+Synthetischer Algorithmus:
+  <span ng-repeat="rel in rawSynthetic">{{formatScheme(rel.scheme)}}: {{formatDeps(rel.deps)}}
+  </span></pre>
+  </p>
 </div>
