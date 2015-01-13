@@ -1,22 +1,17 @@
 var worker = function() {
-  // Angular needs a global window object
-  var window = self;
-  
-  // Skeleton properties to get Angular to load and bootstrap.
-  self.history = {};
-  var document = {
-    readyState: 'complete',
-    querySelector: function() {},
-    createElement: function() {
-      return {
-        pathname: '',
-        setAttribute: function() {}
-      }
-    }
-  };
-  
   // Load Angular: must be on same domain as this script
-  importScripts('../../bower_components/angular/angular.js', 'algorithm.js');
+  var load = false;
+  try {
+    if (!angular) {
+      load = true;
+    }
+  } catch(e) {
+    load = true;
+  }
+  
+  if (load) {
+    importScripts('../../bower_components/angular/angular.js', 'algorithm.js');
+  }
   
   var dataFromScheme = function(scheme, type) {
     var arr = [];
@@ -97,4 +92,29 @@ var worker = function() {
   
   angular.bootstrap(null, ['worker']); // quite hacky
 };
-if (self) worker(); // only if in webworker loaded
+var inWorker = false;
+try {
+  if (!window || window.document === undefined) {
+    inWorker = true;
+  }
+} catch(e) {
+  inWorker = true;
+}
+if (inWorker) {
+  // Angular needs a global window object
+  var window = self;
+  
+  // Skeleton properties to get Angular to load and bootstrap.
+  self.history = {};
+  var document = {
+    readyState: 'complete',
+    querySelector: function() {},
+    createElement: function() {
+      return {
+        pathname: '',
+        setAttribute: function() {}
+      }
+    }
+  };
+  worker(); // only if in webworker loaded
+}
