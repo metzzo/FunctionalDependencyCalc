@@ -1,0 +1,12 @@
+<div class="fd-resizeable">
+  <span class="fd-entrycontainer">
+    <fd-entry ng-repeat="x in set track by $index" data="x" fdreadonly="readonly">
+    </fd-entry>
+  </span>
+  
+  <div class="fd-addentry" ng-hide="readonly">
+    <button type="button" class="btn btn-primary btn-xs" >
+      <span class="glyphicon glyphicon-plus"></span>
+    </button>
+  </div>
+</div>
