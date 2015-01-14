@@ -8,7 +8,8 @@
 // 'test/spec/**/*.js'
 
 module.exports = function (grunt) {
-
+  grunt.loadNpmTasks('grunt-gh-pages');
+  
   // Load grunt tasks automatically
   require('load-grunt-tasks')(grunt);
 
@@ -206,6 +207,7 @@ module.exports = function (grunt) {
       dist: {
         src: [
           '<%= yeoman.dist %>/scripts/{,*/}*.js',
+          '!<%= yeoman.dist %>/scripts/worker.js',
           '<%= yeoman.dist %>/styles/{,*/}*.css',
           '<%= yeoman.dist %>/images/{,*/}*.{png,jpg,jpeg,gif,webp,svg}',
           '<%= yeoman.dist %>/styles/fonts/*'
@@ -224,6 +226,7 @@ module.exports = function (grunt) {
           html: {
             steps: {
               js: ['concat', 'uglifyjs'],
+              worker: ['concat', 'uglifyjs'],
               css: ['cssmin']
             },
             post: {}
@@ -237,7 +240,12 @@ module.exports = function (grunt) {
       html: ['<%= yeoman.dist %>/{,*/}*.html'],
       css: ['<%= yeoman.dist %>/styles/{,*/}*.css'],
       options: {
-        assetsDirs: ['<%= yeoman.dist %>','<%= yeoman.dist %>/images']
+        assetsDirs: ['<%= yeoman.dist %>','<%= yeoman.dist %>/images'],
+        blockReplacements: {
+          worker: function (block) {
+            return '<script> var workerPath = "' + block.dest + '"; </script>';
+          }
+        }
       }
     },
 
@@ -385,6 +393,14 @@ module.exports = function (grunt) {
         singleRun: false,
         autoWatch: true
       }
+    },
+    
+    // Deploy to gh pages
+    'gh-pages': {
+      options: {
+        base: 'dist'
+      },
+      src: ['**']
     }
   });
 
@@ -426,9 +442,10 @@ module.exports = function (grunt) {
     'uglify',
     'filerev',
     'usemin',
-    'htmlmin'
+    'htmlmin',
+    'gh-pages'
   ]);
-
+  
   grunt.registerTask('default', [
     'newer:jshint',
     'test',

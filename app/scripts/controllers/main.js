@@ -9,7 +9,7 @@
  */
 angular.module('functionalDependencyApp')
   .factory('calculator', ['$q', function($q) {
-    var worker = new Worker('scripts/domain/algoWorker.js');
+    var worker = new Worker(window.workerPath ? window.workerPath : 'scripts/domain/algoWorker.js');
     var defer;
 
     worker.addEventListener('message', function(e) {
