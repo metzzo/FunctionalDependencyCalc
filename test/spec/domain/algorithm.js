@@ -76,6 +76,12 @@ describe('Algorithm', function () {
       deps: [ [['A'], ['B', 'C']], [['C'], ['D']], [['A'], ['D']]],
       keys: [['A', 'E']],
       superkeys: [['A', 'E'], ['A', 'B', 'E'], ['A', 'C', 'E'], ['A', 'D', 'E'], ['A', 'B', 'C', 'E'], ['A', 'B', 'D', 'E'], ['A', 'C', 'D', 'E'], ['A', 'B', 'C', 'D', 'E']],
+    },
+    {
+      scheme: ['B', 'C', 'D', 'F', 'G'],
+      deps: [[['B', 'C'], ['D', 'G']], [['B', 'G'], ['C', 'F']],  [['D', 'F'], ['C', 'F', 'G']]],
+      is3NF: true,
+      isBCNF: false
     }
   ];
   
@@ -220,6 +226,22 @@ describe('Algorithm', function () {
       });
     }
     
+    if (typeof data.is3NF != 'undefined' && typeof data.isBCNF != 'undefined') {
+      it('calculates 3. nf & BCNF', function() {
+        // arrange
+        var relations = null;
+        var expct3NF = data.is3NF, expctBCNF = data.isBCNF;
+        
+        // act
+        relations = relation.isInNF();
+        
+        // assert
+        expect(relations.isInBCNF).toBe(expctBCNF);
+        expect(relations.isIn3NF).toBe(expct3NF);
+        expect(relation.name()).toEqual(original.name());
+      });
+    }
+    
     it('isSuperKey works', function() {
        // arrange
       var superKey      = relation.calculateSuperKey();
@@ -242,6 +264,6 @@ describe('Algorithm', function () {
       }
       
       expect(relation.name()).toEqual(original.name());
-    })
+    });
   });
 });

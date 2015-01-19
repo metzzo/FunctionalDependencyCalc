@@ -7,14 +7,7 @@
  * # Set
  */
 angular.module('functionalDependencyApp')
-  .factory('fdSetData', function() {
-    return {
-      createScheme: function() {
-        
-      }
-    };
-  })
-  .directive('fdSet', function () {
+  .directive('fdSet', function($rootScope) {
     return {
       restrict: 'E',
       templateUrl: 'templates/fd-set.html',
@@ -46,9 +39,12 @@ angular.module('functionalDependencyApp')
           });
         
         scope.$on('remove-fdentry', function(event, msg) {
-          var index = scope.set.indexOf(msg);
-          if (index != -1) {
-            scope.set.splice(index, 1);
+          if (scope && scope.set) {
+            var index = scope.set.indexOf(msg);
+            if (index != -1) {
+              scope.set.splice(index, 1);
+              $rootScope.$broadcast('request-dataupdate');
+            }
           }
         });
         
@@ -105,7 +101,8 @@ angular.module('functionalDependencyApp')
         } else if (scope.data.type === 'dep') {
           scope.notifyScheme = function(scheme) {
             scope.data.scheme = scheme;
-            scope.attribue = scope.selected = scheme.length > 0 ? scheme[0] : null;
+            scope.data.attribute = (scope.selected = (scheme.length > 0 ? scheme[0] : { attribue: '' })).attribute;
+            
           };
           scope.selected = null;
           
@@ -135,6 +132,8 @@ angular.module('functionalDependencyApp')
                   ready = scope.data.from[i].attribute.length > 0;
                 }
               }
+              
+              ready = scope.data.to.length > 0 ? ready : false;
               
               for (var i = 0; i < scope.data.to.length; i++) {
                 if (ready) {

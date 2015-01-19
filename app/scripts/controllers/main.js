@@ -76,11 +76,11 @@ angular.module('functionalDependencyApp')
       
       var newRelation = new algo.Relation(scheme, deps);
       if ($scope.relation == null || $scope.relation.name() !== newRelation.name()) {
-        $scope.relation = newRelation;
-        
         calculator
           .calculate(newRelation)
           .then(function(data) {
+            $scope.relation = newRelation;
+            
             $scope.rawKeys = algo.toScheme(data.rawKeys);
             $scope.keys = data.keys;
             
@@ -92,9 +92,11 @@ angular.module('functionalDependencyApp')
             
             $scope.rawSynthetic = algo.toRelation(data.rawSynthetic);
             $scope.synthetic = data.synthetic;
+            
+            $scope.normalforms = data.normalforms;
+            
+            console.log("NEW CALCULATION " + $scope.relation.name() + ' ' + newRelation.name());
           });
-        
-        console.log("NEW CALCULATION " + $scope.relation.name() + ' ' + newRelation.name());
       }
     });
     

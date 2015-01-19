@@ -431,11 +431,38 @@ angular.module('FDAlgorithm', [])
   };
   
   module.Relation.prototype.isInNF = function() {
+    var isInBCNF = true, isIn3NF = true;
+    var deps = this.deps;
     
+    deps = this.removeTrivialFD(deps);
+    deps = this.fdDecomposition(deps);
+    
+    var keys = this.calculateKey();
+    
+    for (var i = 0; i < deps.length && (isInBCNF || isIn3NF); i++) {
+      var dep = deps[i];
+      
+      var isInKey = false, isSuperKey = false;
+      for (var j = 0; j < keys.length && (!isInKey || !isSuperKey); j++) {
+        if (keys[j].contains(dep.from)) {
+          isInKey = true;
+        }
+        if (dep.from.contains(keys[j])) {
+          isSuperKey = true;
+        }
+      }
+      
+      if (isIn3NF) {
+        isIn3NF = isInKey || isSuperKey;
+      }
+      if (isInBCNF) {
+        isInBCNF = isSuperKey;
+      }
+    }
     return {
-      result: '',
-      description: []
-    };
+      'isInBCNF': isInBCNF,
+      'isIn3NF': isIn3NF
+    }
   };
   
   module.Relation.prototype.calculateDecompositionAlgorithm = function() {

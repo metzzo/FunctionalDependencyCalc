@@ -25,6 +25,11 @@
     <fd-set set="canonicalOverlap" type="fdep" fdreadonly="true"></fd-set>
   </p>
   <p>
+    <h5>Normalformen</h5>
+    <p>Erfüllt 3. Normalform? {{normalforms.isIn3NF ? 'Ja' : 'Nein'}}</p>
+    <p>Erfüllt Boyce Codd Normalform? {{normalforms.isInBCNF ? 'Ja' : 'Nein'}}</p>
+  </p>
+  <p>
     <h5>Synthetischer Algorithmus</h5>
     <div ng-repeat="rel in synthetic">
       <div class="leftsynthetic">

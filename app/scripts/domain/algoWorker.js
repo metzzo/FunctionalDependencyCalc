@@ -1,3 +1,4 @@
+var queue = [];
 var worker = function() {
   // Load Angular: must be on same domain as this script
   var load = false;
@@ -86,8 +87,14 @@ var worker = function() {
         });
       }
       
+      result.normalforms = newRelation.isInNF();;
+      
       $window.postMessage(result);
     };
+    for (var i = 0; i < queue.length; i++) {
+      $window.onmessage(queue[i]);
+    }
+    queue = [];
   });
   
   angular.bootstrap(null, ['worker']); // quite hacky
@@ -115,6 +122,9 @@ if (inWorker) {
         setAttribute: function() {}
       }
     }
+  };
+  window.onmessage = function(e) {
+    queue.push(e);
   };
   setTimeout(worker, 0);
 }
