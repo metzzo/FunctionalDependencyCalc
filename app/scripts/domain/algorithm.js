@@ -290,23 +290,6 @@ angular.module('FDAlgorithm', [])
     return hull;
   };
   
-  
-  module.Relation.prototype.checkArmstrongAxioms = function(fromAttr, toAttr) {
-    fromAttr = 0; toAttr = 0;
-    return {
-      result: '',
-      description: []
-    };
-  };
-  
-  module.Relation.prototype.checkEquivalent = function(withRelation) {
-    withRelation = 0;
-    return {
-      result: '',
-      description: []
-    };
-  };
-  
   module.Relation.prototype.fdDecomposition = function(deps) {
     var newDeps = [];
     for (var i = 0; i < deps.length; i++) {
