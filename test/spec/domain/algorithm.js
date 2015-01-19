@@ -82,6 +82,11 @@ describe('Algorithm', function () {
       deps: [[['B', 'C'], ['D', 'G']], [['B', 'G'], ['C', 'F']],  [['D', 'F'], ['C', 'F', 'G']]],
       is3NF: true,
       isBCNF: false
+    },
+    {
+      scheme: ['B', 'C', 'E', 'F', 'H'],
+      deps: [[['B'], ['C', 'H']], [['H'], ['F']], [['B'], ['F']]],
+      decomposition: [ ]
     }
   ];
   
@@ -241,6 +246,24 @@ describe('Algorithm', function () {
         expect(relation.name()).toEqual(original.name());
       });
     }
+    
+    if (data.decomposition) {
+      it('calculates decomposition', function() {
+        // arrange
+        var relations = null;
+        var expctDecomp = data.decomposition;
+        
+        // act
+        relations = relation.calculateDecompositionAlgorithm();
+        console.log(JSON.stringify(relations, null, 4));
+        
+        // assert
+        expect(relations).toEqual(expctDecomp);
+        expect(relation.name()).toEqual(original.name());
+      });
+    }
+    
+    relation.calculateDecompositionAlgorithm();
     
     it('isSuperKey works', function() {
        // arrange

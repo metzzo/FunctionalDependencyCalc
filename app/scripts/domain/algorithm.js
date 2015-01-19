@@ -106,6 +106,18 @@ angular.module('FDAlgorithm', [])
     return new module.Scheme(set);
   };
   
+  module.Scheme.prototype.findApplicableDeps = function(deps) {
+    // find all deps that share the same attributes
+    var tmpDeps = [];
+    for (var j = 0; j < deps.length; j++) {
+      var tmpDep = deps[j];
+      if (this.contains(tmpDep.from.union(tmpDep.to))) {
+        tmpDeps.push(tmpDep);
+      }
+    }
+    return tmpDeps;
+  };
+  
   module.Scheme.prototype.asSet = function() {
     var set = { };
     for (var i = 0; i < this.scheme.length; i++) {
@@ -367,14 +379,9 @@ angular.module('FDAlgorithm', [])
       var dep = deps[i];
       // create scheme
       var scheme = dep.from.union(dep.to);
+      
       // find all deps that share the same attributes
-      var tmpDeps = [];
-      for (var j = 0; j < deps.length; j++) {
-        var tmpDep = deps[j];
-        if (scheme.contains(tmpDep.from.union(tmpDep.to))) {
-          tmpDeps.push(tmpDep);
-        }
-      }
+      var tmpDeps = scheme.findApplicableDeps(deps);
       
       // create it bitch
       var relation = new module.Relation(scheme, tmpDeps);
@@ -422,7 +429,8 @@ angular.module('FDAlgorithm', [])
     
     var keys = this.calculateKey();
     
-    for (var i = 0; i < deps.length && (isInBCNF || isIn3NF); i++) {
+    var breakingBCNF = [], breakingNF = [];
+    for (var i = 0; i < deps.length; i++) {
       var dep = deps[i];
       
       var isInKey = false, isSuperKey = false;
@@ -441,19 +449,56 @@ angular.module('FDAlgorithm', [])
       if (isInBCNF) {
         isInBCNF = isSuperKey;
       }
+      
+      if (!isInKey && !isSuperKey) {
+        breakingNF.push(dep);
+      }
+      
+      if (!isSuperKey) {
+        breakingBCNF.push(dep);
+      }
     }
     return {
       'isInBCNF': isInBCNF,
-      'isIn3NF': isIn3NF
+      'isIn3NF': isIn3NF,
+      'breakingBCNF': breakingBCNF,
+      'breakingNF': breakingNF
     }
   };
   
   module.Relation.prototype.calculateDecompositionAlgorithm = function() {
-    
-    return {
-      result: '',
-      description: []
-    };
+    var normalform = this.isInNF();
+    if (!normalform.isInBCNF) {
+      var results = [];
+      var deps = this.calculateCanonicalOverlap(); // just to be sure ;)
+      
+      for (var i = 0; i < normalform.breakingBCNF.length; i++) {
+        var result = [];
+        var dep = normalform.breakingBCNF[i];
+                
+        var R1Scheme = dep.from.union(dep.to);
+        var R2Scheme = this.scheme.minus(dep.to);
+        
+        var RScheme = this.scheme.minus(R1Scheme.union(R2Scheme));
+        
+        var R1Deps = R1Scheme.findApplicableDeps(deps);
+        var R2Deps = R2Scheme.findApplicableDeps(deps);
+        var RDeps  = RScheme .findApplicableDeps(deps);
+        
+        var R1 = new module.Relation(R1Scheme, R1Deps);
+        var R2 = new module.Relation(R2Scheme, R2Deps);
+        
+        result = result.concat(R1.calculateDecompositionAlgorithm());
+        result = result.concat(R2.calculateDecompositionAlgorithm());
+        result.push(new module.Relation(RScheme, RDeps));
+        
+        results.push(result);
+      }
+      
+      return results;
+    } else {
+      return [ this ];
+    }
   };
   
   return module;
