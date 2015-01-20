@@ -223,33 +223,37 @@ angular.module('FDAlgorithm', [])
   };
   
   module.Relation.prototype.calculateKey = function() {
-    var deps = this.resolveTransFD(this.deps);
+    var self = this;
     
-    var resolve = function(scheme, deps) {
+    var fixKeyCandidate = function(keyCandidate) {
       var results = [];
-      for (var i = 0; i < deps.length; i++) {
-        var dep = deps[i];
-        
-        if (scheme.contains(dep.from)) {
-          var newScheme = scheme.minus(dep.to.minus(dep.from));
-          var newDeps = deps.slice(0);
-          newDeps.splice(i, 1); // delete current
-          
-          results = results.concat(resolve(newScheme, newDeps));
-        } 
-      }
-      
-      if (results.length === 0) {
-        return [ scheme ];
-      } else {
+      if (!self.isSuperKey(keyCandidate.scheme)) {
+        // try to add attributes
+        for (var i = 0; i < self.scheme.scheme.length; i++) {
+          var attr = new module.Scheme( [ self.scheme.scheme[i] ] );
+          if (!keyCandidate.contains(attr)) {
+            results = results.concat(fixKeyCandidate(keyCandidate.union(attr)));
+          }
+        }
         return results;
+      } else {
+        return [ keyCandidate ];
       }
     };
-    var result = resolve(this.scheme, deps);
     
-    this.removeSuperKeys(result);
-    
-    return result;
+    if (this.deps.length > 0) {
+      var result = [];
+      
+      for (var i = 0; i < this.deps.length; i++) {
+        var dep = this.deps[i];
+        var keys = fixKeyCandidate(dep.from);
+        result = result.concat(keys);
+      }
+      this.removeSuperKeys(result);
+      return result;
+    } else {
+      return [ this.scheme ];
+    }
   };
   
   module.Relation.prototype.calculateSuperKey = function() {
@@ -335,8 +339,9 @@ angular.module('FDAlgorithm', [])
   module.Relation.prototype.calculateCanonicalOverlap = function() {
     var deps = this.deps;
     
-    deps = this.removeTrivialFD(deps);
     deps = this.fdDecomposition(deps);
+    deps = this.removeTrivialFD(deps);
+    
     
     // left reduction
     for (var i = 0; i < deps.length; i++) {
@@ -435,7 +440,7 @@ angular.module('FDAlgorithm', [])
       
       var isInKey = false, isSuperKey = false;
       for (var j = 0; j < keys.length && (!isInKey || !isSuperKey); j++) {
-        if (keys[j].contains(dep.from)) {
+        if (keys[j].contains(dep.to)) {
           isInKey = true;
         }
         if (dep.from.contains(keys[j])) {
@@ -469,33 +474,26 @@ angular.module('FDAlgorithm', [])
   module.Relation.prototype.calculateDecompositionAlgorithm = function() {
     var normalform = this.isInNF();
     if (!normalform.isInBCNF) {
-      var results = [];
-      var deps = this.calculateCanonicalOverlap(); // just to be sure ;)
+      var result = [];
+      var dep = normalform.breakingBCNF[0];
+              
+      var R1Scheme = dep.from.union(dep.to);
+      var R2Scheme = this.scheme.minus(dep.to);
       
-      for (var i = 0; i < normalform.breakingBCNF.length; i++) {
-        var result = [];
-        var dep = normalform.breakingBCNF[i];
-                
-        var R1Scheme = dep.from.union(dep.to);
-        var R2Scheme = this.scheme.minus(dep.to);
-        
-        var RScheme = this.scheme.minus(R1Scheme.union(R2Scheme));
-        
-        var R1Deps = R1Scheme.findApplicableDeps(deps);
-        var R2Deps = R2Scheme.findApplicableDeps(deps);
-        var RDeps  = RScheme .findApplicableDeps(deps);
-        
-        var R1 = new module.Relation(R1Scheme, R1Deps);
-        var R2 = new module.Relation(R2Scheme, R2Deps);
-        
-        result = result.concat(R1.calculateDecompositionAlgorithm());
-        result = result.concat(R2.calculateDecompositionAlgorithm());
-        result.push(new module.Relation(RScheme, RDeps));
-        
-        results.push(result);
-      }
+      var RScheme = this.scheme.minus(R1Scheme.union(R2Scheme));
       
-      return results;
+      var R1Deps = [dep];
+      var R2Deps = dep.removeMyself(this.deps);
+      var RDeps  = RScheme.findApplicableDeps(this.deps);
+      
+      var R1 = new module.Relation(R1Scheme, R1Deps);
+      var R2 = new module.Relation(R2Scheme, R2Deps);
+      
+      result = result.concat(R1.calculateDecompositionAlgorithm());
+      result = result.concat(R2.calculateDecompositionAlgorithm());
+      result.push(new module.Relation(RScheme, RDeps));
+      
+      return result;
     } else {
       return [ this ];
     }

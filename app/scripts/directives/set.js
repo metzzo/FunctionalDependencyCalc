@@ -101,7 +101,7 @@ angular.module('functionalDependencyApp')
         } else if (scope.data.type === 'dep') {
           scope.notifyScheme = function(scheme) {
             scope.data.scheme = scheme;
-            scope.data.attribute = (scope.selected = (scheme.length > 0 ? scheme[0] : { attribue: '' })).attribute;
+            scope.data.attribute = (scope.selected = (scheme.length > 0 ? scheme[0] : { attribute: '' })).attribute;
             
           };
           scope.selected = null;
